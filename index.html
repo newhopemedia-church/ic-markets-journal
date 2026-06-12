@@ -166,7 +166,7 @@
 
 <div class="container">
   <div class="tabs" role="tablist">
-    <button class="tab active" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
+    <button class="tab active" onclick="switchTab('diary')"><i class="ti ti-plus" aria-hidden="true"></i> <span>Новая запись</span></button>
     <button class="tab" onclick="switchTab('log')"><i class="ti ti-list" aria-hidden="true"></i> <span>Журнал</span></button>
     <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar" aria-hidden="true"></i> <span>Аналитика</span></button>
     <button class="tab" onclick="switchTab('calendar')"><i class="ti ti-calendar" aria-hidden="true"></i> <span>Календарь</span></button>
@@ -311,11 +311,8 @@
   </div>
   <!-- DIARY -->
   <div id="tab-diary" class="section active">
-    <div class="diary-header">
-      <div style="font-size:13px;color:var(--text2);">Подробный дневник сделок с эмоциями и скриншотами</div>
-      <button class="diary-add-btn" onclick="toggleDiaryForm()"><i class="ti ti-plus"></i> Добавить запись</button>
-    </div>
-    <div class="diary-form" id="diary-form" style="display:none;">
+    
+    <div class="diary-form" id="diary-form" style="display:block;">
       <div class="diary-form-grid">
         <div class="form-group">
           <label for="d-date">Дата</label>
@@ -404,7 +401,6 @@
       </div>
       <div style="display:flex;gap:8px;">
         <button class="diary-save-btn" id="d-save-btn" onclick="saveDiaryEntry()"><i class="ti ti-device-floppy"></i> Сохранить</button>
-        <button class="diary-cancel-btn" onclick="toggleDiaryForm()">Отмена</button>
       </div>
     </div>
     <div id="diary-entries"></div>
