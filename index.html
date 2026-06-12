@@ -327,6 +327,22 @@
           </select>
         </div>
         <div class="form-group">
+          <label for="d-dir">Направление</label>
+          <select id="d-dir">
+            <option value="">— выбрать —</option>
+            <option value="long">Long (покупка)</option>
+            <option value="short">Short (продажа)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="d-tf">Таймфрейм</label>
+          <select id="d-tf">
+            <option value="">— выбрать —</option>
+            <option>M1</option><option>M5</option><option>M15</option>
+            <option>M30</option><option>H1</option><option>H4</option><option>D1</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="d-risk">Риск ($)</label>
           <input type="text" id="d-risk" placeholder="50$" />
         </div>
@@ -740,6 +756,8 @@ function toggleDiaryForm() {
     });
     clearDiaryImage();
     selectedDiaryEmotion = '';
+    const ddir = document.getElementById('d-dir'); if(ddir) ddir.value='';
+    const dtf = document.getElementById('d-tf'); if(dtf) dtf.value='';
     document.querySelectorAll('#diary-form .emotion-btn').forEach(b => b.classList.remove('selected'));
     setTimeout(initDiaryDrop, 50);
   }
@@ -797,6 +815,8 @@ async function saveDiaryEntry() {
   const record = {
     date: document.getElementById('d-date').value || new Date().toISOString().slice(0,10),
     pair: pair || null,
+    dir: document.getElementById('d-dir').value || null,
+    tf: document.getElementById('d-tf') ? document.getElementById('d-tf').value || null : null,
     risk: document.getElementById('d-risk').value || null,
     profit_target: document.getElementById('d-profit-target').value || null,
     entry_desc: entryDesc || null,
