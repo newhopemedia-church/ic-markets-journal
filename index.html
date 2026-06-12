@@ -167,7 +167,6 @@
 <div class="container">
   <div class="tabs" role="tablist">
     <button class="tab active" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
-    <button class="tab" onclick="switchTab('add')"><i class="ti ti-plus" aria-hidden="true"></i> <span>Новая сделка</span></button>
     <button class="tab" onclick="switchTab('log')"><i class="ti ti-list" aria-hidden="true"></i> <span>Журнал</span></button>
     <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar" aria-hidden="true"></i> <span>Аналитика</span></button>
     <button class="tab" onclick="switchTab('calendar')"><i class="ti ti-calendar" aria-hidden="true"></i> <span>Календарь</span></button>
@@ -367,6 +366,27 @@
           <textarea id="d-comments" style="min-height:80px;" placeholder="Что сделала правильно? Что улучшить?"></textarea>
         </div>
         <div class="form-group full">
+          <label for="d-reason">Причина входа</label>
+          <textarea id="d-reason" style="min-height:80px;" placeholder="Пробой уровня, паттерн, подтверждение объёма..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Эмоциональное состояние</label>
+          <div class="emotion-grid">
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="спокоен">◎ Спокоен</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="уверен">◈ Уверен</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="нетерпелив">◇ Нетерпелив</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="страх">◻ Страх</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="жадность">◆ Жадность</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="fomo">▲ FOMO</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="месть">✕ Месть рынку</button>
+            <button class="emotion-btn" onclick="selectDiaryEmotion(this)" data-val="усталость">◌ Усталость</button>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label for="d-notes">Заметки / ошибки / выводы</label>
+          <textarea id="d-notes" style="min-height:80px;" placeholder="Что прошло хорошо? Что можно было сделать лучше?"></textarea>
+        </div>
+        <div class="form-group full">
           <label>Скриншот графика</label>
           <div id="d-drop-zone" onclick="document.getElementById('d-img-input').click()" style="border:2px dashed var(--border-md);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;color:var(--text3);font-size:13px;background:var(--surface2);">
             <i class="ti ti-photo-plus" style="font-size:24px;display:block;margin-bottom:6px;"></i>
@@ -429,7 +449,7 @@ async function init() {
 init();
 
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['diary','add','log','stats','calendar'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['diary','log','stats','calendar'][i]===t));
   document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='log') renderLog();
@@ -699,6 +719,13 @@ function showDayDetail(dateStr) {
 // ========== DIARY ==========
 let diaryEntries = [];
 let currentImageFile = null;
+let selectedDiaryEmotion = "";
+
+function selectDiaryEmotion(btn) {
+  document.querySelectorAll("#diary-form .emotion-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedDiaryEmotion = btn.dataset.val;
+}
 
 async function loadDiary() {
   const { data, error } = await db.from('diary').select('*').order('created_at', { ascending: false });
@@ -712,10 +739,12 @@ function toggleDiaryForm() {
   f.style.display = isHidden ? 'block' : 'none';
   if(isHidden) {
     document.getElementById('d-date').value = new Date().toISOString().slice(0,10);
-    ['d-pair','d-risk','d-profit-target','d-entry-desc','d-sl','d-tp','d-result','d-emotion-before','d-emotion-after','d-comments'].forEach(id => {
+    ['d-pair','d-risk','d-profit-target','d-entry-desc','d-sl','d-tp','d-result','d-emotion-before','d-emotion-after','d-comments','d-reason','d-notes'].forEach(id => {
       const el = document.getElementById(id); if(el) el.value = '';
     });
     clearDiaryImage();
+    selectedDiaryEmotion = '';
+    document.querySelectorAll('#diary-form .emotion-btn').forEach(b => b.classList.remove('selected'));
     setTimeout(initDiaryDrop, 50);
   }
 }
@@ -781,6 +810,9 @@ async function saveDiaryEntry() {
     emotion_before: document.getElementById('d-emotion-before').value || null,
     emotion_after: document.getElementById('d-emotion-after').value || null,
     comments: comments || null,
+    reason: document.getElementById('d-reason').value || null,
+    emotion: selectedDiaryEmotion || null,
+    notes: document.getElementById('d-notes').value || null,
     screenshot_url: screenshotUrl
   };
   const { error } = await db.from('diary').insert([record]);
@@ -828,6 +860,9 @@ function renderDiary() {
         ${e.emotion_before?`<div><div class="diary-field-label">Эмоции ДО</div><div class="diary-field-val">${e.emotion_before}</div></div>`:''}
         ${e.emotion_after?`<div><div class="diary-field-label">Эмоции ПОСЛЕ</div><div class="diary-field-val">${e.emotion_after}</div></div>`:''}
         ${e.comments?`<div style="grid-column:1/-1"><div class="diary-field-label">Комментарии</div><div class="diary-field-val">${e.comments}</div></div>`:''}
+        ${e.reason?`<div style="grid-column:1/-1"><div class="diary-field-label">Причина входа</div><div class="diary-field-val">${e.reason}</div></div>`:''}
+        ${e.emotion?`<div><div class="diary-field-label">Эмоция</div><div class="diary-field-val">${e.emotion}</div></div>`:''}
+        ${e.notes?`<div style="grid-column:1/-1"><div class="diary-field-label">Заметки</div><div class="diary-field-val">${e.notes}</div></div>`:''}
       </div>
       ${e.screenshot_url?`<img class="diary-entry-img" src="${e.screenshot_url}" ${imgClick} />`:''}
     </div>`;
