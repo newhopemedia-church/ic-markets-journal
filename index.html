@@ -832,10 +832,34 @@ async function saveDiaryEntry() {
     screenshot_url: screenshotUrl
   };
   const { error } = await db.from('diary').insert([record]);
+  if(error) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Сохранить';
+    alert('Ошибка: ' + error.message); return;
+  }
+
+  // Also save to Trade 2 for journal/analytics
+  const pnlNum = parseFloat(record.result);
+  const tradeRecord = {
+    date: record.date,
+    pair: record.pair,
+    dir: record.dir || null,
+    tf: record.tf || null,
+    stop_loss: record.stop_loss || null,
+    take_profit: record.take_profit || null,
+    lot_size: record.risk || null,
+    pnl: isNaN(pnlNum) ? 0 : pnlNum,
+    result: isNaN(pnlNum) ? 'be' : pnlNum > 0 ? 'win' : pnlNum < 0 ? 'loss' : 'be',
+    reason: record.entry_desc || null,
+    emotion: record.emotion || null,
+    notes: record.notes || null,
+  };
+  await db.from('Trade 2').insert([tradeRecord]);
+
   btn.disabled = false;
   btn.innerHTML = '<i class="ti ti-device-floppy"></i> Сохранить';
-  if(error) { alert('Ошибка: ' + error.message); return; }
   toggleDiaryForm();
+  await loadTrades();
   await loadDiary();
   renderDiary();
 }
