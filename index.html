@@ -108,6 +108,31 @@
   .cal-pnl{font-size:11px;font-weight:600;font-family:"IBM Plex Mono",monospace;margin-top:2px;}
   .cal-pnl.pos{color:#27b213;}.cal-pnl.neg{color:#993C1D;}
   .cal-count{font-size:10px;color:var(--text3);margin-top:1px;}
+  /* DIARY CSS */
+  .diary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
+  .diary-add-btn{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;}
+  .diary-add-btn:hover{background:var(--accent-dark);}
+  .diary-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+  .diary-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .diary-save-btn{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .diary-save-btn:hover{background:var(--accent-dark);}
+  .diary-cancel-btn{padding:10px 16px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;cursor:pointer;}
+  .diary-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:10px;box-shadow:var(--shadow);}
+  .diary-entry-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;}
+  .diary-entry-date{font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .diary-delete-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:4px 7px;border-radius:5px;flex-shrink:0;transition:all .15s;}
+  .diary-delete-btn:hover{color:#D85A30;background:#faece7;}
+  .diary-field-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+  .diary-field-val{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;}
+  .diary-entry-img{max-width:100%;border-radius:var(--radius);border:1px solid var(--border);margin-top:12px;cursor:pointer;transition:opacity .15s;}
+  .diary-entry-img:hover{opacity:0.85;}
+  .img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;align-items:center;justify-content:center;cursor:zoom-out;}
+  .img-modal.open{display:flex;}
+  .img-modal img{max-width:90vw;max-height:90vh;border-radius:var(--radius);}
+  #d-drop-zone:hover{border-color:var(--accent);color:var(--accent);}
+  #d-drop-zone.dragover{border-color:var(--accent);background:var(--accent-light);}
+  .diary-empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
+  .diary-empty i{font-size:36px;display:block;margin-bottom:10px;}
   @media(max-width:600px){
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .form-grid{grid-template-columns:1fr;}
@@ -145,6 +170,7 @@
     <button class="tab" onclick="switchTab('log')"><i class="ti ti-list" aria-hidden="true"></i> <span>Журнал</span></button>
     <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar" aria-hidden="true"></i> <span>Аналитика</span></button>
     <button class="tab" onclick="switchTab('calendar')"><i class="ti ti-calendar" aria-hidden="true"></i> <span>Календарь</span></button>
+    <button class="tab" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
   </div>
 
   <!-- ADD -->
@@ -284,6 +310,85 @@
     </div>
     <div id="cal-day-detail"></div>
   </div>
+  <!-- DIARY -->
+  <div id="tab-diary" class="section">
+    <div class="diary-header">
+      <div style="font-size:13px;color:var(--text2);">Подробный дневник сделок с эмоциями и скриншотами</div>
+      <button class="diary-add-btn" onclick="toggleDiaryForm()"><i class="ti ti-plus"></i> Добавить запись</button>
+    </div>
+    <div class="diary-form" id="diary-form" style="display:none;">
+      <div class="diary-form-grid">
+        <div class="form-group">
+          <label for="d-date">Дата</label>
+          <input type="date" id="d-date" />
+        </div>
+        <div class="form-group">
+          <label for="d-pair">Валютная пара</label>
+          <select id="d-pair">
+            <option value="">— выбрать —</option>
+            <option>EUR/USD</option><option>GBP/USD</option>
+            <option>USD/CHF</option><option>AUD/USD</option><option>NZD/USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="d-risk">Риск ($)</label>
+          <input type="text" id="d-risk" placeholder="50$" />
+        </div>
+        <div class="form-group">
+          <label for="d-profit-target">Цель прибыли (R)</label>
+          <input type="text" id="d-profit-target" placeholder="1/2" />
+        </div>
+        <div class="form-group full">
+          <label for="d-entry-desc">Вход (описание)</label>
+          <textarea id="d-entry-desc" style="min-height:80px;" placeholder="Опиши точку входа, паттерн, уровень..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="d-sl">Стоп-лосс</label>
+          <input type="text" id="d-sl" placeholder="1.0820" />
+        </div>
+        <div class="form-group">
+          <label for="d-tp">Тейк-профит</label>
+          <input type="text" id="d-tp" placeholder="1.0920" />
+        </div>
+        <div class="form-group">
+          <label for="d-result">Результат ($)</label>
+          <input type="text" id="d-result" placeholder="+75 или -40" />
+        </div>
+        <div class="form-group">
+          <label for="d-emotion-before">Эмоции ДО</label>
+          <input type="text" id="d-emotion-before" placeholder="спокойна, уверена..." />
+        </div>
+        <div class="form-group full">
+          <label for="d-emotion-after">Эмоции ПОСЛЕ</label>
+          <textarea id="d-emotion-after" style="min-height:60px;" placeholder="Что почувствовала после закрытия?"></textarea>
+        </div>
+        <div class="form-group full">
+          <label for="d-comments">Комментарии / Выводы</label>
+          <textarea id="d-comments" style="min-height:80px;" placeholder="Что сделала правильно? Что улучшить?"></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Скриншот графика</label>
+          <div id="d-drop-zone" onclick="document.getElementById('d-img-input').click()" style="border:2px dashed var(--border-md);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;color:var(--text3);font-size:13px;background:var(--surface2);">
+            <i class="ti ti-photo-plus" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+            Нажми или перетащи скриншот сюда
+          </div>
+          <input type="file" id="d-img-input" accept="image/*" style="display:none;" onchange="handleDiaryImageUpload(event)" />
+          <div id="d-img-preview" style="margin-top:8px;display:none;">
+            <div style="position:relative;display:inline-block;">
+              <img id="d-img-preview-img" style="max-width:100%;max-height:200px;border-radius:var(--radius);border:1px solid var(--border);" />
+              <button onclick="clearDiaryImage()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;font-size:16px;line-height:1;">×</button>
+            </div>
+          </div>
+          <div id="d-upload-status" style="font-size:12px;color:var(--text3);margin-top:6px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="diary-save-btn" id="d-save-btn" onclick="saveDiaryEntry()"><i class="ti ti-device-floppy"></i> Сохранить</button>
+        <button class="diary-cancel-btn" onclick="toggleDiaryForm()">Отмена</button>
+      </div>
+    </div>
+    <div id="diary-entries"></div>
+  </div>
 </div>
 
 <script>
@@ -323,12 +428,13 @@ async function init() {
 init();
 
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['add','log','stats','calendar'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['add','log','stats','calendar','diary'][i]===t));
   document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='log') renderLog();
   if(t==='stats') renderStats();
   if(t==='calendar') renderCalendar();
+  if(t==='diary') { loadDiary().then(() => renderDiary()); }
 }
 
 function selectEmotion(btn) {
@@ -588,6 +694,172 @@ function showDayDetail(dateStr) {
   html += '</tbody></table></div>';
   document.getElementById('cal-day-detail').innerHTML = html;
 }
+
+// ========== DIARY ==========
+let diaryEntries = [];
+let currentImageFile = null;
+
+async function loadDiary() {
+  const { data, error } = await db.from('diary').select('*').order('created_at', { ascending: false });
+  if(error) { console.error('Diary load error:', error); return; }
+  diaryEntries = data || [];
+}
+
+function toggleDiaryForm() {
+  const f = document.getElementById('diary-form');
+  const isHidden = f.style.display === 'none' || f.style.display === '';
+  f.style.display = isHidden ? 'block' : 'none';
+  if(isHidden) {
+    document.getElementById('d-date').value = new Date().toISOString().slice(0,10);
+    ['d-pair','d-risk','d-profit-target','d-entry-desc','d-sl','d-tp','d-result','d-emotion-before','d-emotion-after','d-comments'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    clearDiaryImage();
+    setTimeout(initDiaryDrop, 50);
+  }
+}
+
+function handleDiaryImageUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  currentImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('d-img-preview-img').src = e.target.result;
+    document.getElementById('d-img-preview').style.display = 'block';
+    document.getElementById('d-drop-zone').style.display = 'none';
+    document.getElementById('d-upload-status').textContent = '📎 ' + file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearDiaryImage() {
+  currentImageFile = null;
+  const preview = document.getElementById('d-img-preview');
+  const zone = document.getElementById('d-drop-zone');
+  const status = document.getElementById('d-upload-status');
+  if(preview) preview.style.display = 'none';
+  if(zone) zone.style.display = 'block';
+  if(status) status.textContent = '';
+  const input = document.getElementById('d-img-input');
+  if(input) input.value = '';
+}
+
+async function uploadScreenshot(file) {
+  const ext = file.name.split('.').pop();
+  const fileName = 'diary_' + Date.now() + '.' + ext;
+  const { error } = await db.storage.from('screenshots').upload(fileName, file, { upsert: true });
+  if(error) { console.error('Upload error:', error); return null; }
+  const { data: urlData } = db.storage.from('screenshots').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+async function saveDiaryEntry() {
+  const pair = document.getElementById('d-pair').value;
+  const entryDesc = document.getElementById('d-entry-desc').value.trim();
+  const comments = document.getElementById('d-comments').value.trim();
+  if(!pair && !entryDesc && !comments) { alert('Заполни хотя бы пару или описание'); return; }
+  const btn = document.getElementById('d-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i> Сохранение...';
+  let screenshotUrl = null;
+  if(currentImageFile) {
+    document.getElementById('d-upload-status').textContent = '⬆️ Загружаю скриншот...';
+    screenshotUrl = await uploadScreenshot(currentImageFile);
+    document.getElementById('d-upload-status').textContent = screenshotUrl ? '✅ Загружен' : '❌ Ошибка';
+  }
+  const record = {
+    date: document.getElementById('d-date').value || new Date().toISOString().slice(0,10),
+    pair: pair || null,
+    risk: document.getElementById('d-risk').value || null,
+    profit_target: document.getElementById('d-profit-target').value || null,
+    entry_desc: entryDesc || null,
+    stop_loss: document.getElementById('d-sl').value || null,
+    take_profit: document.getElementById('d-tp').value || null,
+    result: document.getElementById('d-result').value || null,
+    emotion_before: document.getElementById('d-emotion-before').value || null,
+    emotion_after: document.getElementById('d-emotion-after').value || null,
+    comments: comments || null,
+    screenshot_url: screenshotUrl
+  };
+  const { error } = await db.from('diary').insert([record]);
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-device-floppy"></i> Сохранить';
+  if(error) { alert('Ошибка: ' + error.message); return; }
+  toggleDiaryForm();
+  await loadDiary();
+  renderDiary();
+}
+
+async function deleteDiaryEntry(id) {
+  if(!confirm('Удалить запись?')) return;
+  await db.from('diary').delete().eq('id', id);
+  await loadDiary();
+  renderDiary();
+}
+
+function renderDiary() {
+  const container = document.getElementById('diary-entries');
+  if(!container) return;
+  if(!diaryEntries.length) {
+    container.innerHTML = '<div class="diary-empty"><i class="ti ti-notebook"></i>Записей пока нет.<br>Нажми «Добавить запись» чтобы начать.</div>';
+    return;
+  }
+  container.innerHTML = diaryEntries.map(e => {
+    const resultNum = parseFloat(e.result);
+    const resultColor = !isNaN(resultNum) ? (resultNum >= 0 ? '#0F6E56' : '#993C1D') : 'var(--text)';
+    const imgClick = e.screenshot_url ? `onclick="document.getElementById('img-modal-img').src='${e.screenshot_url}';document.getElementById('img-modal').classList.add('open')"` : '';
+    return `<div class="diary-entry">
+      <div class="diary-entry-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="diary-entry-date">${e.date||''}</span>
+          ${e.pair?`<span class="badge badge-be">${e.pair}</span>`:''}
+          ${e.result?`<span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;color:${resultColor};">${e.result}</span>`:''}
+        </div>
+        <button class="diary-delete-btn" onclick="deleteDiaryEntry(${e.id})"><i class="ti ti-trash"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        ${e.risk?`<div><div class="diary-field-label">Риск</div><div class="diary-field-val">${e.risk}</div></div>`:''}
+        ${e.profit_target?`<div><div class="diary-field-label">Цель прибыли</div><div class="diary-field-val">${e.profit_target}</div></div>`:''}
+        ${e.stop_loss?`<div><div class="diary-field-label">Стоп-лосс</div><div class="diary-field-val">${e.stop_loss}</div></div>`:''}
+        ${e.take_profit?`<div><div class="diary-field-label">Тейк-профит</div><div class="diary-field-val">${e.take_profit}</div></div>`:''}
+        ${e.entry_desc?`<div style="grid-column:1/-1"><div class="diary-field-label">Вход</div><div class="diary-field-val">${e.entry_desc}</div></div>`:''}
+        ${e.emotion_before?`<div><div class="diary-field-label">Эмоции ДО</div><div class="diary-field-val">${e.emotion_before}</div></div>`:''}
+        ${e.emotion_after?`<div><div class="diary-field-label">Эмоции ПОСЛЕ</div><div class="diary-field-val">${e.emotion_after}</div></div>`:''}
+        ${e.comments?`<div style="grid-column:1/-1"><div class="diary-field-label">Комментарии</div><div class="diary-field-val">${e.comments}</div></div>`:''}
+      </div>
+      ${e.screenshot_url?`<img class="diary-entry-img" src="${e.screenshot_url}" ${imgClick} />`:''}
+    </div>`;
+  }).join('');
+}
+
+function initDiaryDrop() {
+  const zone = document.getElementById('d-drop-zone');
+  if(!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')) {
+      currentImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('d-img-preview-img').src = ev.target.result;
+        document.getElementById('d-img-preview').style.display = 'block';
+        zone.style.display = 'none';
+        document.getElementById('d-upload-status').textContent = '📎 ' + file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+// ========== END DIARY ==========
 </script>
+
+<div class="img-modal" id="img-modal" onclick="this.classList.remove('open')">
+  <img id="img-modal-img" src="" alt="preview" />
+</div>
+
 </body>
 </html>
