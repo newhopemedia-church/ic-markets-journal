@@ -166,15 +166,15 @@
 
 <div class="container">
   <div class="tabs" role="tablist">
-    <button class="tab active" onclick="switchTab('add')"><i class="ti ti-plus" aria-hidden="true"></i> <span>Новая сделка</span></button>
+    <button class="tab active" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
+    <button class="tab" onclick="switchTab('add')"><i class="ti ti-plus" aria-hidden="true"></i> <span>Новая сделка</span></button>
     <button class="tab" onclick="switchTab('log')"><i class="ti ti-list" aria-hidden="true"></i> <span>Журнал</span></button>
     <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar" aria-hidden="true"></i> <span>Аналитика</span></button>
     <button class="tab" onclick="switchTab('calendar')"><i class="ti ti-calendar" aria-hidden="true"></i> <span>Календарь</span></button>
-    <button class="tab" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
   </div>
 
   <!-- ADD -->
-  <div id="tab-add" class="section active">
+  <div id="tab-add" class="section">
     <div id="alert-ok" class="alert alert-success" role="alert"><i class="ti ti-circle-check"></i> Сделка сохранена!</div>
     <div id="alert-err" class="alert alert-error" role="alert"><i class="ti ti-alert-circle"></i> <span id="err-text">Ошибка сохранения</span></div>
     <div class="card">
@@ -311,7 +311,7 @@
     <div id="cal-day-detail"></div>
   </div>
   <!-- DIARY -->
-  <div id="tab-diary" class="section">
+  <div id="tab-diary" class="section active">
     <div class="diary-header">
       <div style="font-size:13px;color:var(--text2);">Подробный дневник сделок с эмоциями и скриншотами</div>
       <button class="diary-add-btn" onclick="toggleDiaryForm()"><i class="ti ti-plus"></i> Добавить запись</button>
@@ -350,13 +350,13 @@
           <label for="d-tp">Тейк-профит</label>
           <input type="text" id="d-tp" placeholder="1.0920" />
         </div>
-        <div class="form-group">
+        <div class="form-group full">
           <label for="d-result">Результат ($)</label>
           <input type="text" id="d-result" placeholder="+75 или -40" />
         </div>
-        <div class="form-group">
+        <div class="form-group full">
           <label for="d-emotion-before">Эмоции ДО</label>
-          <input type="text" id="d-emotion-before" placeholder="спокойна, уверена..." />
+          <textarea id="d-emotion-before" style="min-height:60px;" placeholder="Что чувствовала до входа в сделку?"></textarea>
         </div>
         <div class="form-group full">
           <label for="d-emotion-after">Эмоции ПОСЛЕ</label>
@@ -403,6 +403,7 @@ let selectedEmotion = '';
 
 const todayStr = () => new Date().toISOString().slice(0,10);
 document.getElementById('f-date').value = todayStr();
+loadDiary().then(() => renderDiary());
 
 
 
@@ -428,7 +429,7 @@ async function init() {
 init();
 
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['add','log','stats','calendar','diary'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['diary','add','log','stats','calendar'][i]===t));
   document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='log') renderLog();
